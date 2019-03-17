@@ -6,6 +6,7 @@ from . import pipe
 from . import rnmrtk
 from . import simpson
 from . import sparky
+from . import spinsolve
 from . import tecmag
 from . import varian
 # replicate varian namespace in agilent
