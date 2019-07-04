@@ -177,7 +177,7 @@ def read(dir, bin_file=None, pars_files=None):
 
     # read the pulse program and add to the dictionary
 
-    # determind shape and complexity for direct dim if needed
+    # determine shape and complexity for direct dim if needed
 
     return dic, data
 
@@ -250,8 +250,11 @@ def read_binary(filename, big=False):
     dic = {"FILE_SIZE": os.stat(filename).st_size}
 
     # Reshape the data according to the read sizes of array dimensions
-    t = data[:size.prod()]
-    data = (data[size.prod()::2] - 1j*data[size.prod()+1::2]).reshape(size.prod())
+    if size[1] == 1:
+        t = data[:size.prod()]
+        data = (data[size.prod()::2] - 1j*data[size.prod()+1::2]).reshape(size[:2])
+    else:
+        data =  (data[::2] - 1j*data[1::2]).reshape(size[:2], order='F')
 
     return dic, data
 
@@ -330,7 +333,10 @@ def read_pars(filename):
                 val = line[1].strip()
                 if val[0] == "\"":
                     val = val.strip("\"")
-                else: val = float(val)
+                else:
+                    try:
+                        val = float(val)
+                    except ValueError: pass
 
                 dic[key] = val
 
