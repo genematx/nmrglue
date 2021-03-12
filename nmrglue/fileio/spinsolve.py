@@ -169,10 +169,17 @@ def read(dir, bin_file=None, pars_files=None):
             dic.update(read_pars(os.path.join(dir, f)))
 
     # read the binary file
-    if bin_file is None: bin_file = 'data.1d'
-    if os.path.isfile(os.path.join(dir, bin_file)):
-        data_dic, data = read_binary(os.path.join(dir, bin_file))
+    if bin_file is not None:
+        fileName = os.path.join(dir, bin_file)
+    else:
+        fileName = os.path.join(dir, 'data.1d')
+        # TODO: select 1d or 2d based on the data in the acqu and protocol
+
+    if os.path.isfile(fileName):
+        data_dic, data = read_binary(fileName)
         dic.update(data_dic)
+    else:
+        raise FileNotFoundError(None, None, fileName)
 
 
     # read the pulse program and add to the dictionary

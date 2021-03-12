@@ -97,7 +97,6 @@ def _ps_acme_score(ph, data):
 
     return h1s + p
 
-
 def _ps_peak_minima_score(ph, data):
     """
     Phase correction using simple minima-minimisation around highest peak
@@ -130,7 +129,6 @@ def _ps_peak_minima_score(ph, data):
     minb = np.min(data[i:i+100])
 
     return np.abs(mina - minb)
-
 
 def manual_ps(data, notebook=False):
     """
@@ -254,3 +252,45 @@ def manual_ps(data, notebook=False):
         p0 = spc0.val-spc1.val*spiv.val/data.size
         p1 = spc1.val
         return p0, p1
+
+def automatic_ps(data, fn, p0=0.0, p1=0.0, fit_Ph1=True):
+    """
+    Automatic linear phase correction
+
+    Parameters
+    ----------
+    data : ndarray
+        Array of NMR data.
+    fn : str or function
+        Algorithm to use for phase scoring. Built in functions can be
+        specified by one of the following strings: "acme", "peak_minima"
+    p0 : float
+        Initial zero order phase in degrees.
+    p1 : float
+        Initial first order phase in degrees.
+
+    Returns
+    -------
+    ndata : ndarray
+        Phased NMR data.
+
+    """
+    if not callable(fn):
+        fn = {
+            'peak_minima': _ps_peak_minima_score,
+            'acme': _ps_acme_score,
+        }[fn]
+
+    if fit_Ph1:
+        opt = [p0, p1]
+        opt = scipy.optimize.fmin(fn, x0=opt, args=(data, ))
+
+        p0, p1 = opt[0], opt[1]
+    else:
+        opt = [p0]
+        opt = scipy.optimize.fmin(lambda x : fn((x, p1), data), x0=opt)
+        p0 = opt[0]
+
+    # phasedspc = ps(data, p0=opt[0], p1=opt[1])
+
+    return p0, p1
